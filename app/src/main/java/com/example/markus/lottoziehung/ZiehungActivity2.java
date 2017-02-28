@@ -3,6 +3,7 @@ package com.example.markus.lottoziehung;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,10 +18,10 @@ import java.util.ArrayList;
 import static com.example.markus.lottoziehung.NumberContract.NumberEntry.*;
 
 public class ZiehungActivity2 extends AppCompatActivity {
-
+    private static final String LIFECYCLE_CALLBACK_TEXT_KEY = "callback";
     private TextView numbers;
     private Button getNumbers;
-private Cursor lottozahlen;
+    private Cursor lottozahlen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,13 @@ private Cursor lottozahlen;
         this.numbers = (TextView) findViewById(R.id.numbers);
         this.getNumbers = (Button) findViewById(R.id.getNumbers);
 
+        if(savedInstanceState != null)
+        {
+            if(savedInstanceState.containsKey(LIFECYCLE_CALLBACK_TEXT_KEY))
+            {
+                this.numbers.setText(savedInstanceState.getString(LIFECYCLE_CALLBACK_TEXT_KEY));
+            }
+        }
 
         this.getNumbers.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,6 +47,15 @@ private Cursor lottozahlen;
 
             }
         });
+
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        outState.putString(LIFECYCLE_CALLBACK_TEXT_KEY, this.numbers.getText().toString());
+        super.onSaveInstanceState(outState);
 
 
     }
@@ -77,7 +94,6 @@ private Cursor lottozahlen;
                                 null, null);
                     }
 
-
                 }
 
             } else
@@ -114,7 +130,6 @@ private Cursor lottozahlen;
             return resolver.query(CONTENT_URI,
                     null, null, null, null);
 
-
         }
 
         // Invoked on UI thread
@@ -122,7 +137,7 @@ private Cursor lottozahlen;
         protected void onPostExecute(Cursor cursor) {
             super.onPostExecute(cursor);
 
-            lottozahlen=cursor;
+            lottozahlen = cursor;
             zahlenZiehen(3);
 
         }
