@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Lottoziehung</string>
+    <string name="get_numbers">Zahlen ziehen</string>
+    <string name="textViewInhalt">Zahlen</string>
+</resources>
