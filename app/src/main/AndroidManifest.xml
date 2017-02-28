@@ -3,7 +3,7 @@
     package="com.example.markus.lottoziehung">
 
     <uses-permission android:name="com.example.markus.zahlengenerator.NumberContentProvider.TERMS_READ" />
-    
+    <uses-permission android:name="com.example.markus.zahlengenerator.NumberContentProvider.TERMS_DELETE" />
 
     <application
         android:allowBackup="true"

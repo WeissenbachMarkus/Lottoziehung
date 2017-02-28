@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,8 +20,7 @@ public class ZiehungActivity2 extends AppCompatActivity {
 
     private TextView numbers;
     private Button getNumbers;
-    private Cursor mData;
-
+private Cursor lottozahlen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,65 +35,72 @@ public class ZiehungActivity2 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                try {
-                    executeASYNC();
+                new FetchNumbers().execute();
 
-                    String result = "";
-                    ArrayList<Integer> list = new ArrayList<>();
-
-                    if (mData.getCount() > 2)
-
-                        if (mData.moveToFirst()) {
-
-                            for (int i = 0; i < mData.getCount(); i++) {
-
-                                int id = mData.getColumnIndex(COLUMN_VALUE);
-                                list.add(id);
-
-                                if (i != 0)
-                                    result = result + "," + mData.getString(id);
-                                else
-                                    result += mData.getString(id);
-
-                                mData.moveToNext();
-                            }
-
-
-                            numbers.setText(result);
-                            Toast.makeText(ZiehungActivity2.this, list.size()+"", Toast.LENGTH_LONG).show();
-                            for (Integer id : list) {
-
-                                String[] ids={id.toString()};
-                                int num=getContentResolver().delete(
-                                        CONTENT_URI.buildUpon().appendPath(id+"").build(),
-                                        null, null);
-                                Toast.makeText(ZiehungActivity2.this, num+"", Toast.LENGTH_LONG).show();
-                            }
-
-                        } else
-                            Toast.makeText(ZiehungActivity2.this, "Keine Zahlen mehr vorhanden!", Toast.LENGTH_LONG).show();
-
-
-                } catch (Exception ex) {
-                    Toast.makeText(ZiehungActivity2.this, ex.toString(), Toast.LENGTH_LONG).show();
-                }
             }
         });
 
 
     }
 
-    private void executeASYNC() {
-        new FetchNumbers().execute();
+    private void zahlenZiehen(int anzahl) {
+
+        try {
+
+            String result = "";
+            ArrayList<Integer> list = new ArrayList<>();
+
+
+            if (lottozahlen.getCount() >= anzahl) {
+
+                if (lottozahlen.moveToFirst()) {
+
+                    for (int i = 0; i < anzahl; i++) {
+
+                        int id = lottozahlen.getInt(lottozahlen.getColumnIndex(_ID));
+                        list.add(id);
+
+                        if (i != 0)
+                            result += "," + lottozahlen.getString(lottozahlen.getColumnIndex(COLUMN_VALUE));
+                        else
+                            result = lottozahlen.getString(lottozahlen.getColumnIndex(COLUMN_VALUE));
+
+                        lottozahlen.moveToNext();
+                    }
+
+                    numbers.setText(result);
+
+                    for (Integer id : list) {
+
+                        getContentResolver().delete(
+                                CONTENT_URI.buildUpon().appendPath(id + "").build(),
+                                null, null);
+                    }
+
+
+                }
+
+            } else
+                Toast.makeText(ZiehungActivity2.this, "Nicht genug Zahlen vorhanden! " + lottozahlen.getCount(), Toast.LENGTH_LONG).show();
+
+
+        } catch (Exception ex) {
+            Toast.makeText(ZiehungActivity2.this, ex.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mData.close();
+        lottozahlen.close();
     }
 
     public class FetchNumbers extends AsyncTask<Void, Void, Cursor> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
 
         // Invoked on a background thread
         @Override
@@ -107,16 +114,16 @@ public class ZiehungActivity2 extends AppCompatActivity {
             return resolver.query(CONTENT_URI,
                     null, null, null, null);
 
-        }
 
+        }
 
         // Invoked on UI thread
         @Override
         protected void onPostExecute(Cursor cursor) {
             super.onPostExecute(cursor);
 
-            mData = cursor;
-
+            lottozahlen=cursor;
+            zahlenZiehen(3);
 
         }
     }
